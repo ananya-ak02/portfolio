@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
   role: "user" | "ai";
@@ -9,16 +8,14 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "What's your strongest project?",
-  "Are you good at system design?",
-  "Tell me about InterviewIQ",
-  "Why should we hire you?",
-  "What makes you different?",
+  "Strongest project?",
+  "System design?",
+  "Why hire you?",
 ];
 
 export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "ai", content: "Hi! I'm Ananya's AI clone. Ask me about her projects, skills, or experience." }
+    { role: "ai", content: "Hi. I'm an AI trained on Ananya's resume and projects. What would you like to know?" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +29,6 @@ export default function AIChat() {
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading || rateLimitExceeded) return;
 
-    // Rate limiting check
     const messageCount = parseInt(localStorage.getItem('ai_chat_count') || '0');
     if (messageCount >= 10) {
       setRateLimitExceeded(true);
@@ -61,108 +57,85 @@ export default function AIChat() {
       if (data.message) {
         setMessages((prev) => [...prev, { role: "ai", content: data.message }]);
       } else {
-        setMessages((prev) => [...prev, { role: "ai", content: "Sorry, I'm having trouble connecting right now." }]);
+        setMessages((prev) => [...prev, { role: "ai", content: "Connection error." }]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "ai", content: "Sorry, an error occurred." }]);
+      setMessages((prev) => [...prev, { role: "ai", content: "System error." }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section id="chat" className="w-full max-w-7xl mx-auto px-6 py-20 z-10 relative">
-      <div className="w-full md:w-[80%] lg:w-[70%] mr-auto">
-        <h2 className="text-sm font-mono text-text-secondary uppercase tracking-[0.2em] mb-2 text-left">
-          ask me anything
-        </h2>
-        <p className="text-text-primary text-lg mb-10">
-          I trained an AI on everything about me. Ask it anything.
-        </p>
-
-        <div className="bg-bg-card border border-border rounded-[24px] overflow-hidden flex flex-col h-[500px] shadow-2xl relative">
-          
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-accent-cyan">
-            <AnimatePresence initial={false}>
-              {messages.map((msg, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-5 py-3 ${
-                      msg.role === "user"
-                        ? "bg-accent-cyan text-bg-primary rounded-br-sm font-medium"
-                        : "bg-bg-secondary text-text-primary border border-border rounded-bl-sm"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {isLoading && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                <div className="bg-bg-secondary border border-border text-text-primary rounded-2xl rounded-bl-sm px-5 py-4 flex gap-1.5 items-center">
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
-                </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Suggestions */}
-          {!rateLimitExceeded && (
-            <div className="px-6 py-3 flex gap-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] border-t border-border/50">
-              {SUGGESTIONS.map((s, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => sendMessage(s)}
-                  className="text-xs bg-bg-secondary border border-border hover:border-accent-cyan text-text-secondary hover:text-accent-cyan px-4 py-2 rounded-full transition-colors interactive shrink-0"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input Area */}
-          <div className="p-4 border-t border-border bg-bg-card/50 backdrop-blur-sm">
-            {rateLimitExceeded ? (
-              <div className="text-center text-accent-orange text-sm py-2">
-                Rate limit reached for this session. Thank you for chatting!
-              </div>
-            ) : (
-              <form 
-                onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
-                className="flex gap-3"
-              >
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask me a question..."
-                  className="flex-1 bg-bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-accent-cyan transition-colors interactive"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="bg-text-primary text-bg-primary hover:bg-accent-cyan disabled:opacity-50 disabled:hover:bg-text-primary px-5 py-3 rounded-xl font-medium transition-colors interactive"
-                >
-                  Send
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
+    <div className="flex flex-col h-full w-full bg-bg-secondary lg:bg-transparent">
+      <div className="p-6 border-b border-border">
+        <h2 className="text-sm font-semibold text-text-primary">Ask my AI</h2>
+        <p className="text-xs text-text-secondary mt-1">Context-aware agent trained on my background.</p>
       </div>
-    </section>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[90%] text-sm leading-relaxed ${
+                msg.role === "user" 
+                ? "bg-text-primary text-bg-primary px-4 py-2.5 rounded-xl rounded-tr-sm font-medium" 
+                : "text-text-primary px-4 py-2.5 rounded-xl rounded-tl-sm bg-bg-card border border-border"
+              }`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-bg-card border border-border text-text-secondary rounded-xl rounded-tl-sm px-4 py-3 text-xs flex gap-1">
+              <span className="animate-pulse">●</span>
+              <span className="animate-pulse" style={{ animationDelay: '0.2s' }}>●</span>
+              <span className="animate-pulse" style={{ animationDelay: '0.4s' }}>●</span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="p-4 border-t border-border bg-bg-primary lg:bg-bg-secondary/50">
+        {!rateLimitExceeded && (
+          <div className="flex gap-2 overflow-x-auto pb-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {SUGGESTIONS.map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => sendMessage(s)}
+                className="whitespace-nowrap text-xs bg-bg-card border border-border hover:border-text-secondary text-text-secondary px-3 py-1.5 rounded-md transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {rateLimitExceeded ? (
+          <div className="text-center text-text-secondary text-xs py-3 border border-border rounded-lg bg-bg-card">
+            Session limit reached.
+          </div>
+        ) : (
+          <form onSubmit={(e) => { e.preventDefault(); sendMessage(input); }} className="relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask anything..."
+              className="w-full bg-bg-card border border-border rounded-lg pl-4 pr-10 py-3 text-sm text-text-primary focus:outline-none focus:border-text-secondary transition-colors"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary disabled:opacity-50"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }

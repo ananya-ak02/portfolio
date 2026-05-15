@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: #020818;
-  --color-bg-secondary: #060D24;
-  --color-bg-card: #0A1628;
-  --color-accent-cyan: #00FFD1;
-  --color-accent-violet: #7B2FFF;
-  --color-accent-orange: #FF6B35;
-  --color-text-primary: #E2F4F0;
-  --color-text-secondary: #7A9E9A;
-  --color-border: #0E2A3A;
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #0A0A0A;
+  --color-bg-card: #111111;
+  --color-accent-cyan: #3b82f6; /* Subtle blue */
+  --color-accent-violet: #8b5cf6;
+  --color-accent-orange: #f97316;
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A3A3A3;
+  --color-border: #262626;
 }
 
 :root {
-  --bg-primary: #020818;
-  --bg-secondary: #060D24;
-  --bg-card: #0A1628;
-  --accent-cyan: #00FFD1;
-  --accent-violet: #7B2FFF;
-  --accent-orange: #FF6B35;
-  --text-primary: #E2F4F0;
-  --text-secondary: #7A9E9A;
-  --border: #0E2A3A;
+  --bg-primary: #000000;
+  --bg-secondary: #0A0A0A;
+  --bg-card: #111111;
+  --accent-cyan: #3b82f6;
+  --accent-violet: #8b5cf6;
+  --accent-orange: #f97316;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A3A3A3;
+  --border: #262626;
 }
 
 html {
@@ -31,19 +31,14 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  cursor: none;
-}
-
-a, button, input, textarea, select, [role="button"] {
-  cursor: none;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -52,55 +47,7 @@ a, button, input, textarea, select, [role="button"] {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan);
+  background: var(--text-secondary);
 }
 
-.noise-bg {
-  position: relative;
-}
-
-.noise-bg::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.04;
-  z-index: 10;
-}
-
-@keyframes rotate-ring {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-rotate-ring {
-  animation: rotate-ring 12s linear infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite linear;
-}
+/* Remove all noise and shimmer classes to maintain FAANG-level clean UI */
