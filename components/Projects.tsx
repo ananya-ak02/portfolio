@@ -10,7 +10,7 @@ const projects = [
     stack: ["LangChain", "Deepgram", "Next.js"],
     featured: true,
     github: "https://github.com/ananya-ak02/InterviewIQ",
-    live: "https://interviewiq.vercel.app",
+    live: "https://interviewiq-gilt.vercel.app/",
     image: "/interviewiq.png"
   },
   {
@@ -20,7 +20,7 @@ const projects = [
     stack: ["Groq", "Redis", "Next.js"],
     featured: true,
     github: "https://github.com/ananya-ak02/ai-code-review-agent",
-    live: "https://ai-code-review-agent.vercel.app",
+    live: "https://ai-code-review-agent-eta.vercel.app/",
     image: "/ai-code-review.png"
   },
   {
@@ -30,7 +30,7 @@ const projects = [
     stack: ["Gemini Vision", "Supabase", "React"],
     featured: false,
     github: "https://github.com/ananya-ak02/PlantOS",
-    live: "https://plantos.vercel.app",
+    live: "https://plant-os-three.vercel.app/",
     image: "/plantos.png"
   },
   {
@@ -40,7 +40,7 @@ const projects = [
     stack: ["Node.js", "Next.js", "GraphDB"],
     featured: false,
     github: "https://github.com/ananya-ak02",
-    live: "https://github.com/ananya-ak02",
+    live: "https://learning-adaptor.vercel.app/",
     image: "/learning-adaptor.png"
   }
 ];

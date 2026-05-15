@@ -42,13 +42,13 @@ export default function Hero() {
             <a href="https://github.com/ananya-ak02" target="_blank" rel="noreferrer" className="text-white hover:opacity-80 transition-opacity">
               <FaGithub size={22} />
             </a>
-            <a href="https://linkedin.com/in/ananyakhanduja" target="_blank" rel="noreferrer" className="text-[#0A66C2] hover:opacity-80 transition-opacity">
+            <a href="https://www.linkedin.com/in/ananya-khanduja-72817b317" target="_blank" rel="noreferrer" className="text-[#0A66C2] hover:opacity-80 transition-opacity">
               <FaLinkedinIn size={22} />
             </a>
-            <a href="https://leetcode.com/u/ananyakhanduja/" target="_blank" rel="noreferrer" className="text-[#FFA116] hover:opacity-80 transition-opacity">
+            <a href="https://leetcode.com/u/ananya-ak02/" target="_blank" rel="noreferrer" className="text-[#FFA116] hover:opacity-80 transition-opacity">
               <SiLeetcode size={22} />
             </a>
-            <a href="https://www.naukri.com/code360/profile/ananyakhanduja" target="_blank" rel="noreferrer" className="text-[#F36F21] hover:opacity-80 transition-opacity">
+            <a href="https://www.naukri.com/code360/profile/ddcc43bf-65b1-471b-ad6f-6188b651d4ef" target="_blank" rel="noreferrer" className="text-[#F36F21] hover:opacity-80 transition-opacity">
               <SiCodingninjas size={22} />
             </a>
           </div>
