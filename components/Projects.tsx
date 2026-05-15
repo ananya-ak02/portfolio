@@ -9,7 +9,7 @@ const projects = [
     name: "InterviewIQ",
     description:
       "AI interview practice platform with live confidence analysis and streaming evaluation.",
-    url: "https://interviewiq-esl692t8i-ananya-khandujas-projects.vercel.app/",
+    url: "https://interviewiq-gilt.vercel.app/",
     github: "https://github.com/ananya-ak02",
     tech: [
       "Next.js",
