@@ -2,114 +2,76 @@
 
 import { useEffect, useRef } from "react";
 
-type Particle = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-};
-
 export default function ParticleCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const animationRef = useRef<number | null>(null);
-  const sizeRef = useRef({ width: 0, height: 0 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
 
-    const context = canvas.getContext("2d");
-    if (!context) {
-      return;
-    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    const createParticles = (count: number) => {
-      const { width, height } = sizeRef.current;
-      particlesRef.current = Array.from({ length: count }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        radius: 1.2 + Math.random() * 1.8,
-      }));
-    };
+    let particles: { x: number; y: number; size: number; speedX: number; speedY: number; opacity: number }[] = [];
+    let animationFrameId: number;
 
     const resize = () => {
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      const ratio = window.devicePixelRatio || 1;
-      sizeRef.current = { width, height };
-      canvas.width = Math.floor(width * ratio);
-      canvas.height = Math.floor(height * ratio);
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      createParticles(Math.max(40, Math.floor(width / 24)));
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initParticles();
     };
 
-    const draw = () => {
-      const { width, height } = sizeRef.current;
-      context.clearRect(0, 0, width, height);
-      context.fillStyle = "rgba(0, 255, 209, 0.8)";
-      context.strokeStyle = "rgba(0, 255, 209, 0.15)";
-      context.lineWidth = 1;
-
-      const particles = particlesRef.current;
-      for (const particle of particles) {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        if (particle.x < 0 || particle.x > width) {
-          particle.vx *= -1;
-        }
-        if (particle.y < 0 || particle.y > height) {
-          particle.vy *= -1;
-        }
-
-        context.beginPath();
-        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        context.fill();
+    const initParticles = () => {
+      particles = [];
+      const numParticles = Math.floor((window.innerWidth * window.innerHeight) / 15000);
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 1.5 + 0.5,
+          speedX: (Math.random() - 0.5) * 0.3,
+          speedY: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.4 + 0.1,
+        });
       }
-
-      for (let i = 0; i < particles.length; i += 1) {
-        for (let j = i + 1; j < particles.length; j += 1) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 120) {
-            context.globalAlpha = 1 - distance / 120;
-            context.beginPath();
-            context.moveTo(particles[i].x, particles[i].y);
-            context.lineTo(particles[j].x, particles[j].y);
-            context.stroke();
-            context.globalAlpha = 1;
-          }
-        }
-      }
-
-      animationRef.current = window.requestAnimationFrame(draw);
     };
 
-    resize();
-    draw();
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach((p) => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 255, 209, ${p.opacity * 0.4})`;
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
 
     window.addEventListener("resize", resize);
+    resize();
+    animate();
+
     return () => {
       window.removeEventListener("resize", resize);
-      if (animationRef.current) {
-        window.cancelAnimationFrame(animationRef.current);
-      }
+      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-70"
-      aria-hidden="true"
+      className="fixed inset-0 pointer-events-none z-0"
+      style={{ opacity: 0.4 }}
     />
   );
 }

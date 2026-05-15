@@ -1,128 +1,124 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  FaTrophy,
-  FaBolt,
-  FaGraduationCap,
-  FaUsers,
-} from "react-icons/fa6";
+
+function useCounter(end: number, duration: number = 2, inView: boolean) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    
+    let startTime: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+      
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      setCount(Math.floor(easeProgress * end));
+      
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    
+    requestAnimationFrame(step);
+  }, [end, duration, inView]);
+
+  return count;
+}
 
 const achievements = [
   {
-    title: "Flipkart Girls Wanna Code 7.0 Scholar",
-    detail: "Top 200 of 27,000 applicants",
-    icon: FaTrophy,
-    highlight: true,
+    id: 1,
+    title: "Flipkart Girls Wanna Code 7.0",
+    description: "Selected for exclusive mentorship and pre-placement interview opportunities.",
+    statNumber: 200,
+    statLabel: "Top 200 from 27,000",
+    org: "Flipkart",
+    orgColor: "text-accent-orange",
+    colSpan: "md:col-span-2",
+    height: "min-h-[280px]",
+    watermark: "200"
   },
   {
+    id: 2,
     title: "Samsung Prism GenAI Hackathon",
-    detail: "Top 10 nationwide",
-    icon: FaBolt,
+    description: "Developed AI solutions and placed among the top teams nationally.",
+    statNumber: 10,
+    statLabel: "Top 10 Finalist",
+    org: "Samsung",
+    orgColor: "text-[#4285F4]",
+    colSpan: "md:col-span-1",
+    height: "min-h-[320px]",
+    watermark: "10"
   },
   {
-    title: "Google Big Code",
-    detail: "Top 15,000",
-    icon: FaGraduationCap,
-  },
-  {
-    title: "Microsoft Learn Student Chapter",
-    detail: "Executive Member · 5+ events with 100+ participants",
-    icon: FaUsers,
-  },
+    id: 3,
+    title: "LeetCode & Problem Solving",
+    description: "Consistent problem solving and algorithmic thinking.",
+    statNumber: 400,
+    statLabel: "400+ Problems Solved",
+    org: "LeetCode",
+    orgColor: "text-[#FFA116]",
+    colSpan: "md:col-span-1",
+    height: "min-h-[260px]",
+    watermark: "400"
+  }
 ];
 
-function useCountUp(target: number, isActive: boolean) {
-  const [value, setValue] = useState(0);
-  const frameRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-
-    const start = performance.now();
-    const duration = 1200;
-
-    const animate = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1);
-      setValue(Math.floor(progress * target));
-
-      if (progress < 1) {
-        frameRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    frameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [isActive, target]);
-
-  return value;
-}
-
 export default function Achievements() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
-  const count = useCountUp(200, inView);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="achievements" className="scroll-mt-24 bg-bg-secondary py-24">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-        <div>
-          <h2 className="section-title">Milestones</h2>
-          <p className="section-subtitle">
-            A timeline of the wins that shaped my momentum
-          </p>
-        </div>
-
-        <div ref={ref} className="card relative p-6">
-          <div className="absolute left-5 top-8 h-[calc(100%-4rem)] w-px bg-border md:left-6 md:top-8 md:h-px md:w-[calc(100%-3rem)]" />
-
-          <div className="flex flex-col gap-8 md:flex-row md:gap-6">
-            {achievements.map((item) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.4 }}
-                  className="relative flex gap-4 md:w-full md:flex-col md:gap-3"
-                >
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-bg-primary text-accent-cyan ${
-                      item.highlight ? "shadow-[var(--glow)]" : ""
-                    }`}
-                  >
-                    <Icon />
+    <section id="achievements" className="w-full bg-bg-secondary py-24 z-10 relative border-y border-border/30">
+      <div className="max-w-7xl mx-auto px-6" ref={ref}>
+        <h2 className="text-sm font-mono text-text-secondary uppercase tracking-[0.2em] mb-12 text-left">
+          milestones
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+          {achievements.map((ach, idx) => {
+            const count = useCounter(ach.statNumber, 2.5, isInView);
+            
+            return (
+              <motion.div
+                key={ach.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.6, delay: idx * 0.15, ease: "easeOut" }}
+                className={`relative bg-bg-card border border-border rounded-[24px] p-8 overflow-hidden group interactive flex flex-col justify-between ${ach.colSpan} ${ach.height} hover:border-accent-cyan/30 transition-colors`}
+              >
+                {/* Watermark */}
+                <div className="absolute -bottom-4 -right-4 text-[160px] md:text-[200px] leading-none font-black text-text-primary/[0.03] select-none pointer-events-none group-hover:text-text-primary/[0.05] transition-colors duration-500">
+                  {ach.watermark}
+                </div>
+                
+                <div className="relative z-10">
+                  <div className={`font-bold text-lg mb-4 ${ach.orgColor}`}>
+                    {ach.org}
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-primary">
-                      {item.title}
-                    </p>
-                    <p className="text-sm text-text-secondary">{item.detail}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.4 }}
-            className="mt-8 rounded-lg border border-border bg-bg-primary p-4 text-sm text-text-secondary"
-          >
-            <span className="text-accent-cyan">27,000</span> → Top {count}
-          </motion.div>
+                  <h3 className="text-2xl md:text-3xl font-bold text-text-primary mb-3">
+                    {ach.title}
+                  </h3>
+                  <p className="text-text-secondary max-w-md">
+                    {ach.description}
+                  </p>
+                </div>
+                
+                <div className="mt-8 flex items-end gap-3 z-10 relative">
+                  <span className="text-4xl md:text-5xl font-black text-text-primary">
+                    {count}{ach.id === 3 ? '+' : ''}
+                  </span>
+                  <span className="text-sm text-text-secondary mb-1.5 font-medium tracking-wide uppercase">
+                    {ach.statLabel.replace(ach.statNumber.toString(), '').trim()}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

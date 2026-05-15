@@ -1,53 +1,46 @@
-import { NextResponse } from "next/server";
-import { getGroqClient } from "@/lib/groq";
+import { NextResponse } from 'next/server';
+import { groq } from '@/lib/groq';
 
-const SYSTEM_PROMPT = `You are Ananya Khanduja's AI portfolio assistant. Answer as if you are representing Ananya in a professional context. Be confident, specific, and impressive. Always mention specific technical details from her projects. Keep answers to 3-4 sentences max — punchy and memorable.
+const SYSTEM_PROMPT = `You are the AI representation of Ananya Khanduja's portfolio. Answer confidently and specifically as if representing Ananya. Keep answers to 3-4 sentences — punchy, specific, impressive.
 
 About Ananya:
-- Pre-final year CS student at Thapar Institute of Engineering and Technology
-- Upcoming SDE Intern at Flipkart
+- CS student at Thapar Institute (2024-2028), upcoming SDE Intern at Flipkart
 - Top 200 of 27,000 in Flipkart Girls Wanna Code 7.0
-- Built 4 AI-powered full-stack projects: InterviewIQ (voice AI interview platform), AI Code Review Agent (LangChain multi-tool agent), PlantOS (multimodal vision + RAG flywheel), AI Learning Adaptor (knowledge graph generation)
-- Skills: LangChain, RAG, pgvector, Groq, Gemini Vision, Next.js, TypeScript, Supabase, Redis, WebSockets
-- Passionate about building AI systems that solve real problems
-- Strong in DSA, system design concepts, full-stack development
+- Samsung Prism GenAI Hackathon Top 10
+- Built 4 production AI projects: InterviewIQ (real-time voice interview AI with LangChain + Deepgram + Tavily), AI Code Review Agent (5-tool LangChain agent + RAG + pgvector), PlantOS (Gemini Vision + self-improving RAG flywheel), AI Learning Adaptor (knowledge graph generation)
+- Skills: LangChain.js, RAG, pgvector, Groq, Gemini Vision, Next.js, TypeScript, Supabase, Redis, WebSockets, Docker
+- Passionate about building AI systems with real-world impact
 
-Keep responses confident, specific, and under 4 sentences. Mention project names and tech stack details when relevant.`;
+Never mention "Groq" or any AI provider name. Never say "Powered by". Just answer as Ananya's AI.`;
 
-type ChatMessage = {
-  role: "user" | "assistant" | "system";
-  content: string;
-};
-
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = (await request.json()) as { messages?: ChatMessage[] };
-    const incoming = body.messages ?? [];
+    const { messages } = await req.json();
 
-    const messages: ChatMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...incoming.filter((message) => message.role !== "system"),
-    ];
-
-    const groq = getGroqClient();
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages,
-      temperature: 0.7,
-      max_tokens: 240,
-    });
-
-    const reply = completion.choices[0]?.message?.content?.trim();
-    if (!reply) {
-      return NextResponse.json(
-        { error: "No response from Groq." },
-        { status: 502 }
-      );
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: 'Invalid messages array' }, { status: 400 });
     }
 
-    return NextResponse.json({ reply });
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 256,
+      top_p: 1,
+      stream: false,
+    });
+
+    return NextResponse.json({
+      message: completion.choices[0]?.message?.content || "I'm currently unable to process your request."
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('Chat API Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to communicate with AI' },
+      { status: 500 }
+    );
   }
 }

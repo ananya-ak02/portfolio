@@ -1,227 +1,166 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import ChatBubble from "./ChatBubble";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const suggestedQuestions = [
-  "What's your strongest project?",
-  "Are you good at system design?",
-  "Tell me about InterviewIQ",
-  "What's your tech stack?",
-  "Why should we hire you?",
-];
-
-const MAX_MESSAGES = 10;
-const STORAGE_KEY = "ak-chat-count";
-
-type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
+type Message = {
+  role: "user" | "ai";
   content: string;
 };
 
+const SUGGESTIONS = [
+  "What's your strongest project?",
+  "Are you good at system design?",
+  "Tell me about InterviewIQ",
+  "Why should we hire you?",
+  "What makes you different?",
+];
+
 export default function AIChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "intro",
-      role: "assistant",
-      content:
-        "Hi, I'm Ananya's AI portfolio assistant. Ask me about her projects, skills, or experience.",
-    },
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "ai", content: "Hi! I'm Ananya's AI clone. Ask me about her projects, skills, or experience." }
   ]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [count, setCount] = useState(0);
-  const listRef = useRef<HTMLDivElement | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rateLimitExceeded, setRateLimitExceeded] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const parsed = stored ? Number.parseInt(stored, 10) : 0;
-    setCount(Number.isNaN(parsed) ? 0 : parsed);
-  }, []);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, String(count));
-  }, [count]);
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading || rateLimitExceeded) return;
 
-  useEffect(() => {
-    listRef.current?.scrollTo({
-      top: listRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, isTyping]);
-
-  const remaining = useMemo(
-    () => Math.max(0, MAX_MESSAGES - count),
-    [count]
-  );
-  const isLocked = count >= MAX_MESSAGES;
-
-  const handleSend = async (text: string) => {
-    if (!text.trim() || isTyping) {
+    // Rate limiting check
+    const messageCount = parseInt(localStorage.getItem('ai_chat_count') || '0');
+    if (messageCount >= 10) {
+      setRateLimitExceeded(true);
       return;
     }
+    localStorage.setItem('ai_chat_count', (messageCount + 1).toString());
 
-    if (count >= MAX_MESSAGES) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `limit-${Date.now()}`,
-          role: "assistant",
-          content:
-            "Session limit reached. Refresh to start a new conversation, or reach out via email for more.",
-        },
-      ]);
-      return;
-    }
-
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: text.trim(),
-    };
-
-    const outbound = [...messages, userMessage];
-    setMessages((prev) => [...prev, userMessage]);
+    const userMsg: Message = { role: "user", content: text };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setIsTyping(true);
+    setIsLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: outbound.map(({ role, content }) => ({ role, content })),
-        }),
+          messages: messages.map(m => ({
+            role: m.role === "ai" ? "assistant" : "user",
+            content: m.content
+          })).concat([{ role: "user", content: text }])
+        })
       });
 
-      const data = (await response.json()) as { reply?: string; error?: string };
-      if (!response.ok || !data.reply) {
-        throw new Error(data.error || "Groq request failed");
+      const data = await response.json();
+      if (data.message) {
+        setMessages((prev) => [...prev, { role: "ai", content: data.message }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "ai", content: "Sorry, I'm having trouble connecting right now." }]);
       }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: data.reply ?? "",
-        },
-      ]);
-      setCount((prev) => prev + 1);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Groq is unavailable right now.";
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          role: "assistant",
-          content: message,
-        },
-      ]);
+      setMessages((prev) => [...prev, { role: "ai", content: "Sorry, an error occurred." }]);
     } finally {
-      setIsTyping(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <section
-      id="ai-chat"
-      className="scroll-mt-24 border-b border-border bg-bg-secondary py-24"
-    >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-        <div>
-          <h2 className="section-title">Ask me anything</h2>
-          <p className="section-subtitle">
-            Powered by AI — ask about my projects, skills, or experience
-          </p>
-        </div>
+    <section id="chat" className="w-full max-w-7xl mx-auto px-6 py-20 z-10 relative">
+      <div className="w-full md:w-[80%] lg:w-[70%] mr-auto">
+        <h2 className="text-sm font-mono text-text-secondary uppercase tracking-[0.2em] mb-2 text-left">
+          ask me anything
+        </h2>
+        <p className="text-text-primary text-lg mb-10">
+          I trained an AI on everything about me. Ask it anything.
+        </p>
 
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <div className="card flex flex-col gap-4 p-6">
-            <div
-              ref={listRef}
-              className="flex max-h-[420px] flex-1 flex-col gap-3 overflow-y-auto pr-2"
-            >
-              {messages.map((message) => (
-                <ChatBubble
-                  key={message.id}
-                  role={message.role}
-                  content={message.content}
-                />
-              ))}
-              {isTyping ? (
-                <ChatBubble role="assistant" content="" isLoading />
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-border pt-4">
-              <div className="flex flex-wrap gap-2">
-                {suggestedQuestions.map((question) => (
-                  <button
-                    key={question}
-                    type="button"
-                    onClick={() => handleSend(question)}
-                    className="rounded-md border border-border bg-bg-primary px-3 py-2 text-xs text-text-secondary transition hover:text-text-primary hover:shadow-[var(--glow)]"
-                    data-cursor="hover"
+        <div className="bg-bg-card border border-border rounded-[24px] overflow-hidden flex flex-col h-[500px] shadow-2xl relative">
+          
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-accent-cyan">
+            <AnimatePresence initial={false}>
+              {messages.map((msg, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-5 py-3 ${
+                      msg.role === "user"
+                        ? "bg-accent-cyan text-bg-primary rounded-br-sm font-medium"
+                        : "bg-bg-secondary text-text-primary border border-border rounded-bl-sm"
+                    }`}
                   >
-                    {question}
-                  </button>
-                ))}
-              </div>
+                    {msg.content}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-              <div className="flex flex-col gap-2 sm:flex-row">
+            {isLoading && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                <div className="bg-bg-secondary border border-border text-text-primary rounded-2xl rounded-bl-sm px-5 py-4 flex gap-1.5 items-center">
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 rounded-full bg-accent-cyan/60" />
+                </div>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Suggestions */}
+          {!rateLimitExceeded && (
+            <div className="px-6 py-3 flex gap-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] border-t border-border/50">
+              {SUGGESTIONS.map((s, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => sendMessage(s)}
+                  className="text-xs bg-bg-secondary border border-border hover:border-accent-cyan text-text-secondary hover:text-accent-cyan px-4 py-2 rounded-full transition-colors interactive shrink-0"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Input Area */}
+          <div className="p-4 border-t border-border bg-bg-card/50 backdrop-blur-sm">
+            {rateLimitExceeded ? (
+              <div className="text-center text-accent-orange text-sm py-2">
+                Rate limit reached for this session. Thank you for chatting!
+              </div>
+            ) : (
+              <form 
+                onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
+                className="flex gap-3"
+              >
                 <input
+                  type="text"
                   value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      handleSend(input);
-                    }
-                  }}
-                  disabled={isLocked}
-                  placeholder="Ask about AI systems, projects, or results..."
-                  className="flex-1 rounded-lg border border-border bg-bg-primary px-4 py-3 text-sm text-text-primary outline-none transition focus:border-accent-cyan"
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask me a question..."
+                  className="flex-1 bg-bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-accent-cyan transition-colors interactive"
+                  disabled={isLoading}
                 />
                 <button
-                  type="button"
-                  onClick={() => handleSend(input)}
-                  disabled={isLocked}
-                  className="rounded-lg bg-accent-cyan px-6 py-3 text-sm font-semibold text-bg-primary transition hover:shadow-[var(--glow)] disabled:cursor-not-allowed disabled:opacity-60"
-                  data-cursor="hover"
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="bg-text-primary text-bg-primary hover:bg-accent-cyan disabled:opacity-50 disabled:hover:bg-text-primary px-5 py-3 rounded-xl font-medium transition-colors interactive"
                 >
                   Send
                 </button>
-              </div>
-              <p className="text-xs text-text-secondary">
-                {remaining} messages left in this session
-              </p>
-            </div>
+              </form>
+            )}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="card space-y-4 p-6"
-          >
-            <h3 className="text-lg font-semibold text-text-primary">
-              What this AI knows
-            </h3>
-            <ul className="space-y-3 text-sm text-text-secondary">
-              <li>Real project details: Groq, LangChain, Supabase, Redis.</li>
-              <li>System design mindset and AI product thinking.</li>
-              <li>Achievements, internships, and collaboration strength.</li>
-            </ul>
-            <div className="rounded-lg border border-border bg-bg-primary p-4 text-xs text-text-secondary">
-              Rate limit: {MAX_MESSAGES} messages per session.
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>

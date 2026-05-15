@@ -1,121 +1,59 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  PolarAngleAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-} from "recharts";
 
-const skillGroups = [
-  {
-    label: "Languages",
-    items: ["C++", "Java", "JavaScript", "TypeScript", "Python", "SQL"],
-  },
-  {
-    label: "AI/ML",
-    items: [
-      "LangChain.js ✦",
-      "RAG ✦",
-      "pgvector ✦",
-      "Prompt Engineering ✦",
-      "Groq ✦",
-      "Gemini ✦",
-      "Agents ✦",
-    ],
-  },
-  {
-    label: "Frontend",
-    items: ["React.js", "Next.js", "Tailwind CSS", "Framer Motion", "React Flow"],
-  },
-  {
-    label: "Backend",
-    items: ["Node.js", "REST APIs", "WebSockets", "Redis", "API Design"],
-  },
-  {
-    label: "Databases",
-    items: ["PostgreSQL", "MongoDB", "Firebase", "Supabase"],
-  },
-  {
-    label: "Tools",
-    items: ["Git", "AWS", "Docker", "Vercel"],
-  },
-];
-
-const radarData = [
-  { area: "AI/ML", score: 95 },
-  { area: "Frontend", score: 88 },
-  { area: "Backend", score: 84 },
-  { area: "Systems", score: 82 },
-  { area: "Data", score: 86 },
+const skills = [
+  // AI/ML (Cyan)
+  { name: "LangChain.js", type: "ai", size: "text-2xl md:text-3xl", rotate: "-rotate-2" },
+  { name: "RAG", type: "ai", size: "text-3xl md:text-4xl", rotate: "rotate-1" },
+  { name: "pgvector", type: "ai", size: "text-xl md:text-2xl", rotate: "rotate-2" },
+  { name: "Groq", type: "ai", size: "text-2xl md:text-3xl", rotate: "-rotate-1" },
+  { name: "Gemini Vision", type: "ai", size: "text-xl md:text-2xl", rotate: "rotate-1" },
+  
+  // Languages (Violet)
+  { name: "TypeScript", type: "lang", size: "text-3xl md:text-4xl", rotate: "-rotate-1" },
+  { name: "JavaScript", type: "lang", size: "text-xl md:text-2xl", rotate: "rotate-2" },
+  { name: "Python", type: "lang", size: "text-2xl md:text-3xl", rotate: "-rotate-2" },
+  { name: "C++", type: "lang", size: "text-xl md:text-2xl", rotate: "rotate-1" },
+  
+  // Tools & Infra (Muted)
+  { name: "Next.js 14", type: "tool", size: "text-2xl md:text-3xl", rotate: "rotate-1" },
+  { name: "Supabase", type: "tool", size: "text-xl md:text-2xl", rotate: "-rotate-2" },
+  { name: "Redis", type: "tool", size: "text-xl md:text-2xl", rotate: "rotate-2" },
+  { name: "WebSockets", type: "tool", size: "text-lg md:text-xl", rotate: "-rotate-1" },
+  { name: "Docker", type: "tool", size: "text-xl md:text-2xl", rotate: "rotate-1" },
+  { name: "TailwindCSS", type: "tool", size: "text-xl md:text-2xl", rotate: "-rotate-1" },
 ];
 
 export default function Skills() {
-  return (
-    <section id="skills" className="scroll-mt-24 border-b border-border py-24">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-        <div>
-          <h2 className="section-title">My arsenal</h2>
-          <p className="section-subtitle">
-            A hex-grid of the tools I use to build AI systems end-to-end
-          </p>
-        </div>
+  const getColorClass = (type: string) => {
+    switch(type) {
+      case 'ai': return 'text-accent-cyan border-accent-cyan/30 bg-accent-cyan/5 hover:bg-accent-cyan/10 hover:border-accent-cyan text-shadow-cyan';
+      case 'lang': return 'text-accent-violet border-accent-violet/30 bg-accent-violet/5 hover:bg-accent-violet/10 hover:border-accent-violet text-shadow-violet';
+      default: return 'text-text-secondary border-border bg-bg-secondary hover:text-text-primary hover:border-text-secondary/50';
+    }
+  };
 
-        <div className="grid gap-10 lg:grid-cols-2">
+  return (
+    <section className="w-full max-w-7xl mx-auto px-6 py-10 z-10 relative mb-10">
+      <h2 className="text-sm font-mono text-text-secondary uppercase tracking-[0.2em] mb-12 text-left">
+        my arsenal
+      </h2>
+      
+      <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 py-8 px-4">
+        {skills.map((skill, idx) => (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="card flex flex-col gap-6 p-6"
+            key={idx}
+            whileHover={{ scale: 1.1, y: -5 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            className={`
+              interactive cursor-none font-bold rounded-2xl px-5 py-3 border backdrop-blur-sm shadow-sm transition-colors duration-300
+              ${skill.size} ${skill.rotate} ${getColorClass(skill.type)}
+            `}
           >
-            <p className="text-sm uppercase tracking-[0.3em] text-text-secondary">
-              Skill signal
-            </p>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData} outerRadius="70%">
-                  <PolarAngleAxis
-                    dataKey="area"
-                    tick={{ fill: "#7A9E9A", fontSize: 12 }}
-                  />
-                  <Radar
-                    dataKey="score"
-                    stroke="#00FFD1"
-                    fill="#00FFD1"
-                    fillOpacity={0.12}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="text-sm text-text-secondary">
-              A quick glance at the balance between AI systems, product engineering,
-              and data stack depth.
-            </p>
+            {skill.name}
           </motion.div>
-          {skillGroups.map((group) => (
-            <motion.div
-              key={group.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5 }}
-              className="card p-6"
-            >
-              <p className="text-sm uppercase tracking-[0.3em] text-text-secondary">
-                {group.label}
-              </p>
-              <div className="hex-grid mt-6">
-                {group.items.map((skill) => (
-                  <div key={skill} className="hex-item" data-cursor="hover">
-                    <span>{skill}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        ))}
       </div>
     </section>
   );
