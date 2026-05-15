@@ -28,11 +28,7 @@ export default function Hero() {
         </p>
         
         <div className="flex flex-wrap items-center gap-4 text-text-secondary font-medium text-sm mb-10">
-          <span className="text-text-primary">4 AI Projects</span>
-          <span className="text-border px-1">•</span>
-          <span>Top 200 / 27K</span>
-          <span className="text-border px-1">•</span>
-          <span>SDE Intern @ Flipkart</span>
+          <span className="text-text-primary font-semibold">Upcoming SDE Intern @ Flipkart</span>
         </div>
         
         <div className="flex flex-wrap items-center gap-4 mb-12">
@@ -43,17 +39,17 @@ export default function Hero() {
             See my work
           </button>
           <div className="flex items-center gap-5 ml-4">
-            <a href="https://github.com/ananya-ak02" target="_blank" rel="noreferrer" className="text-text-secondary hover:text-text-primary transition-colors">
-              <FaGithub size={20} />
+            <a href="https://github.com/ananya-ak02" target="_blank" rel="noreferrer" className="text-white hover:opacity-80 transition-opacity">
+              <FaGithub size={22} />
             </a>
-            <a href="https://linkedin.com/in/ananyakhanduja" target="_blank" rel="noreferrer" className="text-text-secondary hover:text-text-primary transition-colors">
-              <FaLinkedinIn size={20} />
+            <a href="https://linkedin.com/in/ananyakhanduja" target="_blank" rel="noreferrer" className="text-[#0A66C2] hover:opacity-80 transition-opacity">
+              <FaLinkedinIn size={22} />
             </a>
-            <a href="https://leetcode.com/u/ananyakhanduja/" target="_blank" rel="noreferrer" className="text-text-secondary hover:text-text-primary transition-colors">
-              <SiLeetcode size={20} />
+            <a href="https://leetcode.com/u/ananyakhanduja/" target="_blank" rel="noreferrer" className="text-[#FFA116] hover:opacity-80 transition-opacity">
+              <SiLeetcode size={22} />
             </a>
-            <a href="https://www.naukri.com/code360/profile/ananyakhanduja" target="_blank" rel="noreferrer" className="text-text-secondary hover:text-text-primary transition-colors">
-              <SiCodingninjas size={20} />
+            <a href="https://www.naukri.com/code360/profile/ananyakhanduja" target="_blank" rel="noreferrer" className="text-[#F36F21] hover:opacity-80 transition-opacity">
+              <SiCodingninjas size={22} />
             </a>
           </div>
         </div>

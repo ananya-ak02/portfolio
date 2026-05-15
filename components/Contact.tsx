@@ -12,7 +12,7 @@ export default function Contact() {
       <div className="max-w-3xl bg-bg-card border border-border p-8 rounded-xl">
         <h3 className="text-2xl font-bold text-text-primary mb-3">Let's connect.</h3>
         <p className="text-text-secondary text-sm mb-6 max-w-lg">
-          I'm currently looking for 2025 internship opportunities and open to collaborating on AI infrastructure or full-stack projects.
+          I'm currently looking for internship opportunities and open to collaborating on AI infrastructure or full-stack projects.
         </p>
         
         <a 
